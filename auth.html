@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign In — IMAT Prep | Emberline Group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Cinzel:wght@400;500;600&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#04060F;--deep:#070A18;
+  --sap:#7C5CFC;--sap-l:#A48EFF;--sap-d:#5438CC;--sap-glow:rgba(124,92,252,0.22);
+  --gold:#C8A84B;
+  --t1:#F2F0FF;--t2:#C4BEED;--t3:#8880C0;--t4:rgba(136,128,192,0.4);
+  --border:rgba(124,92,252,0.14);--border-l:rgba(124,92,252,0.28);
+  --success:#2DD4BF;--danger:#F87171;
+}
+html,body{height:100%}
+body{background:var(--void);color:var(--t2);font-family:'Outfit',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased;cursor:none}
+#cosmos{position:fixed;inset:0;z-index:0;pointer-events:none}
+#grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.022;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-repeat:repeat;background-size:200px;mix-blend-mode:overlay}
+#cdot{position:fixed;z-index:9999;width:5px;height:5px;background:var(--sap-l);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);box-shadow:0 0 12px var(--sap-glow)}
+#cring{position:fixed;z-index:9998;width:30px;height:30px;border:1px solid rgba(124,92,252,0.32);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);transition:width .2s,height .2s}
+
+/* TICKER */
+#ticker{position:fixed;top:0;left:0;right:0;height:32px;z-index:900;background:rgba(124,92,252,0.06);border-bottom:1px solid var(--border);overflow:hidden;display:flex;align-items:center}
+.ticker-track{display:flex;white-space:nowrap;animation:ticker 40s linear infinite}
+.ticker-item{font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--sap);padding:0 2rem;display:inline-flex;align-items:center;gap:.6rem}
+.ticker-dot{color:var(--gold);font-size:.45rem}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* LAYOUT */
+.page{position:relative;z-index:10;display:flex;min-height:100vh;padding-top:32px}
+.left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:4rem;max-width:500px}
+.right{flex:1;display:none;align-items:center;justify-content:center;padding:3rem;border-left:1px solid var(--border)}
+@media(min-width:900px){.right{display:flex}}
+
+.back{display:inline-flex;align-items:center;gap:.5rem;font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--t4);margin-bottom:2.5rem;text-decoration:none;transition:color .3s}
+.back:hover{color:var(--sap-l)}
+
+.brand{margin-bottom:2.5rem}
+.brand-name{font-family:'Cinzel',serif;font-size:1.3rem;letter-spacing:.2em;color:var(--t1)}
+.brand-name span{color:var(--sap-l)}
+.brand-group{font-family:'DM Mono',monospace;font-size:.52rem;letter-spacing:.22em;color:var(--sap);text-transform:uppercase;margin-top:.3rem}
+.brand-line{width:36px;height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin-top:.7rem}
+
+.tabs{display:flex;gap:.3rem;margin-bottom:2rem;background:rgba(11,15,30,0.7);border:1px solid var(--border);border-radius:6px;padding:.3rem}
+.tab{flex:1;padding:.48rem;border-radius:4px;font-family:'Cinzel',serif;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;border:none;background:transparent;color:var(--t3);transition:all .2s;cursor:none}
+.tab.active{background:rgba(124,92,252,0.18);color:var(--sap-l)}
+
+.section{display:none}
+.section.active{display:block}
+.heading{font-family:'Cormorant Garamond',serif;font-size:1.9rem;color:var(--t1);font-weight:400;line-height:1.2;margin-bottom:.5rem}
+.heading em{font-style:italic;color:var(--sap-l)}
+.desc{font-size:.85rem;color:var(--t3);line-height:1.8;margin-bottom:1.8rem}
+.field{display:flex;flex-direction:column;gap:.35rem;margin-bottom:1rem}
+.field label{font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--t4)}
+.field input{background:rgba(4,6,15,0.85);border:1px solid var(--border-l);border-radius:4px;padding:.78rem 1rem;color:var(--t1);font-size:.9rem;outline:none;transition:border-color .3s;font-family:'Outfit',sans-serif}
+.field input:focus{border-color:var(--sap)}
+.field input::placeholder{color:var(--t4)}
+.btn-submit{width:100%;padding:.88rem;background:linear-gradient(135deg,var(--sap-d),var(--sap));color:#fff;border:none;border-radius:4px;font-family:'Cinzel',serif;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;margin-top:.4rem;transition:all .3s;cursor:none}
+.btn-submit:hover{box-shadow:0 6px 28px var(--sap-glow);transform:translateY(-1px)}
+.link-text{font-size:.78rem;color:var(--t4);margin-top:.9rem}
+.link-text a{color:var(--sap-l);text-decoration:none;cursor:none}
+.msg{font-size:.82rem;margin-top:.85rem;min-height:1.1rem;line-height:1.5}
+.msg.error{color:var(--danger)}
+.msg.success{color:var(--success)}
+.free-perks{background:rgba(124,92,252,0.05);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.1rem;margin-top:1.1rem}
+.free-perks-title{font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--sap);margin-bottom:.5rem}
+.free-perks ul{list-style:none;display:flex;flex-direction:column;gap:.28rem}
+.free-perks li{font-size:.77rem;color:var(--t3);display:flex;align-items:center;gap:.5rem}
+.free-perks li::before{content:'✦';color:var(--sap);font-size:.5rem}
+
+/* RIGHT PANEL */
+.right-inner{max-width:380px;text-align:center}
+.quote{font-family:'Cormorant Garamond',serif;font-size:1.45rem;font-style:italic;color:var(--t1);line-height:1.55;margin-bottom:1rem}
+.quote-source{font-family:'DM Mono',monospace;font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--t4);margin-bottom:2.5rem}
+.stats-row{display:flex;gap:2rem;justify-content:center;padding:1.4rem 1.8rem;border:1px solid var(--border);border-radius:10px;background:rgba(11,15,30,0.5)}
+.stat .num{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--sap-l);font-weight:600;line-height:1}
+.stat .lbl{font-family:'DM Mono',monospace;font-size:.48rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-top:.28rem}
+</style>
+</head>
+<body>
+
+<canvas id="cosmos"></canvas>
+<div id="grain"></div>
+<div id="cdot"></div>
+<div id="cring"></div>
+<div id="ticker"><div class="ticker-track" id="ticker-track"></div></div>
+
+<div class="page">
+  <div class="left">
+    <a href="index.html" class="back">← Back to IMAT Prep</a>
+    <div class="brand">
+      <div class="brand-name">IMAT <span>Prep</span></div>
+      <div class="brand-group">Emberline Group</div>
+      <div class="brand-line"></div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('signin')">Sign In</button>
+      <button class="tab" onclick="switchTab('signup')">Create Account</button>
+    </div>
+
+    <div id="signin-section" class="section active">
+      <h2 class="heading">Welcome <em>back,</em><br>scholar.</h2>
+      <p class="desc">Sign in to continue your IMAT preparation.</p>
+      <div class="field"><label>Email</label><input type="email" id="si-email" placeholder="your@email.com" autocomplete="email"></div>
+      <div class="field"><label>Password</label><input type="password" id="si-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')signIn()"></div>
+      <button class="btn-submit" onclick="signIn()">Sign In →</button>
+      <p class="link-text"><a onclick="switchTab('reset')">Forgot your password?</a></p>
+    </div>
+
+    <div id="signup-section" class="section">
+      <h2 class="heading">Begin your<br><em>IMAT journey.</em></h2>
+      <p class="desc">Free account. No credit card required.</p>
+      <div class="field"><label>Full Name</label><input type="text" id="su-name" placeholder="Your name" autocomplete="name"></div>
+      <div class="field"><label>Email</label><input type="email" id="su-email" placeholder="your@email.com" autocomplete="email"></div>
+      <div class="field"><label>Password <span style="color:var(--t4);font-size:.8em;">(min 8 chars)</span></label><input type="password" id="su-pass" placeholder="••••••••" autocomplete="new-password" onkeydown="if(event.key==='Enter')signUp()"></div>
+      <button class="btn-submit" onclick="signUp()">Create Free Account →</button>
+      <div class="free-perks">
+        <div class="free-perks-title">Free Explorer Plan Includes</div>
+        <ul>
+          <li>100 adaptive IMAT practice questions</li>
+          <li>University guide — all 10 schools + cut scores</li>
+          <li>IMAT Intel newsletter every Friday</li>
+          <li>Basic study tracking dashboard</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="reset-section" class="section">
+      <h2 class="heading">Reset your<br><em>password.</em></h2>
+      <p class="desc">Enter your email and we'll send a reset link.</p>
+      <div class="field"><label>Email</label><input type="email" id="rs-email" placeholder="your@email.com" autocomplete="email"></div>
+      <button class="btn-submit" onclick="resetPassword()">Send Reset Link →</button>
+      <p class="link-text"><a onclick="switchTab('signin')">← Back to sign in</a></p>
+    </div>
+
+    <div id="auth-msg" class="msg"></div>
+  </div>
+
+  <div class="right">
+    <div class="right-inner">
+      <blockquote class="quote">"The IMAT rewards the mind that reasons, not the one that merely remembers. Build that mind here."</blockquote>
+      <div class="quote-source">— Dr. Ventus, IMAT AI Scholar</div>
+      <div class="stats-row">
+        <div class="stat"><div class="num">75+</div><div class="lbl">Questions</div></div>
+        <div class="stat"><div class="num">10</div><div class="lbl">Universities</div></div>
+        <div class="stat"><div class="num">5</div><div class="lbl">Domains</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL='https://rqytpqaswofdwhmsaykn.supabase.co';
+const SB_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeXRwcWFzd29mZHdobXNheWtuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MTU5MzksImV4cCI6MjA4ODQ5MTkzOX0.vzsT4oWSxKoWzfDmw7SaCaImA6_SshYwuLA9_nmNHtg';
+const EDGE=SB_URL+'/functions/v1';
+let sb;
+try{sb=supabase.createClient(SB_URL,SB_ANON);}catch(e){}
+
+window.onload=async()=>{
+  if(sb){const{data:{session}}=await sb.auth.getSession();if(session?.user)window.location.href='app.html';}
+  buildTicker();
+};
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',(tab==='signin'&&i===0)||(tab==='signup'&&i===1)));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(tab+'-section').classList.add('active');
+  setMsg('','');
+}
+
+async function signIn(){
+  const email=document.getElementById('si-email').value.trim();
+  const pass=document.getElementById('si-pass').value;
+  if(!email||!pass){setMsg('Please fill in both fields.','error');return;}
+  setMsg('Signing in...','');
+  const{error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){setMsg(error.message,'error');return;}
+  setMsg('Welcome back! Redirecting...','success');
+  setTimeout(()=>window.location.href='app.html',800);
+}
+
+async function signUp(){
+  const name=document.getElementById('su-name').value.trim();
+  const email=document.getElementById('su-email').value.trim();
+  const pass=document.getElementById('su-pass').value;
+  if(!name||!email||pass.length<8){setMsg('Please fill all fields (password min 8 chars).','error');return;}
+  setMsg('Creating your account...','');
+  const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{full_name:name,plan:'explorer'}}});
+  if(error){setMsg(error.message,'error');return;}
+  if(data.user){
+    await sb.from('profiles').upsert({id:data.user.id,full_name:name,email,plan:'explorer'}).catch(()=>{});
+    await sb.from('imat_subscribers').upsert({email,name,source:'imat-signup'},{onConflict:'email'}).catch(()=>{});
+    await fetch(EDGE+'/imat-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'welcome',email,name})}).catch(()=>{});
+  }
+  setMsg('Account created! Redirecting...','success');
+  setTimeout(()=>window.location.href='app.html',1000);
+}
+
+async function resetPassword(){
+  const email=document.getElementById('rs-email').value.trim();
+  if(!email){setMsg('Please enter your email.','error');return;}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+'/auth.html'});
+  if(error)setMsg(error.message,'error');
+  else setMsg('Reset link sent — check your inbox.','success');
+}
+
+function setMsg(text,type){
+  const el=document.getElementById('auth-msg');
+  el.textContent=text;el.className='msg'+(type?' '+type:'');
+}
+
+function buildTicker(){
+  const items=['IMAT 2025 Results Released','University of Bologna — English Program','10+ Italian Medical Schools Use IMAT','Dr. Ventus AI Socratic Mode Active','IMAT Intel — Every Friday','Cut Scores Updated 2026','Free Explorer Plan — 100 Questions','All 5 IMAT Domains Covered','Bologna · Milan · Pavia · Rome · Naples','Institution Partnerships Open','New Questions Added Weekly'];
+  const doubled=[...items,...items];
+  document.getElementById('ticker-track').innerHTML=doubled.map(i=>`<span class="ticker-item">${i}<span class="ticker-dot">✦</span></span>`).join('');
+}
+
+(function(){
+  try{
+    const canvas=document.getElementById('cosmos');
+    const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+    renderer.setSize(window.innerWidth,window.innerHeight);
+    renderer.setClearColor(0x000000,0);
+    const scene=new THREE.Scene();
+    const camera=new THREE.PerspectiveCamera(60,window.innerWidth/window.innerHeight,.1,400);
+    camera.position.z=10;
+    function mkDust(n,spread,hex,op){
+      const g=new THREE.BufferGeometry();const p=new Float32Array(n*3);
+      for(let i=0;i<n;i++){const th=Math.random()*Math.PI*2,ph=Math.acos(2*Math.random()-1),r=Math.cbrt(Math.random())*spread;p[i*3]=r*Math.sin(ph)*Math.cos(th);p[i*3+1]=r*Math.sin(ph)*Math.sin(th);p[i*3+2]=r*Math.cos(ph);}
+      g.setAttribute('position',new THREE.BufferAttribute(p,3));
+      return new THREE.Points(g,new THREE.PointsMaterial({color:new THREE.Color(hex),size:.032,transparent:true,opacity:op,sizeAttenuation:true}));
+    }
+    scene.add(mkDust(1800,50,'#7C5CFC',.45));scene.add(mkDust(600,35,'#A48EFF',.28));scene.add(mkDust(300,22,'#C8A84B',.18));
+    let t=0,cx=0,cy=0;
+    document.addEventListener('mousemove',e=>{cx=(e.clientX/innerWidth-.5)*2;cy=(e.clientY/innerHeight-.5)*2;});
+    (function loop(){requestAnimationFrame(loop);t+=.0004;scene.rotation.y=t+cx*.04;scene.rotation.x=cy*.025;renderer.render(scene,camera);})();
+    window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+  }catch(e){document.getElementById('cosmos').style.display='none';}
+})();
+
+const cdot=document.getElementById('cdot'),cring=document.getElementById('cring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cdot.style.left=mx+'px';cdot.style.top=my+'px';});
+(function tick(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;cring.style.left=rx+'px';cring.style.top=ry+'px';requestAnimationFrame(tick);})();
+</script>
+</body>
+</html>
